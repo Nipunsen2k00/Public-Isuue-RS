@@ -133,7 +133,11 @@ export default function Register() {
         createdAt:   serverTimestamp(),
       });
 
-      navigate('/submit');
+      if (form.email.toLowerCase() === 'admin@civiccurator.com') {
+        navigate('/admin');
+      } else {
+        navigate('/submit');
+      }
     } catch (err) {
       setFirebaseError(friendlyRegError(err.code));
       setSubmitting(false);
@@ -309,13 +313,19 @@ export default function Register() {
 
               <div className="divider"><span>Or sign up with</span></div>
               <div className="social-register">
-                <button type="button" className="btn-social" onClick={() => navigate('/submit')}>
+                <button type="button" className="btn-social" onClick={async () => {
+                  try {
+                    const result = await signInWithPopup(auth, new GoogleAuthProvider());
+                    if (result.user.email?.toLowerCase() === 'admin@civiccurator.com') navigate('/admin');
+                    else navigate('/submit');
+                  } catch(e) {}
+                }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.531,6.489,2.531,12s4.49,10,10.014,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
                   </svg>
                   Google
                 </button>
-                <button type="button" className="btn-social" onClick={() => navigate('/submit')}>
+                <button type="button" className="btn-social" onClick={() => navigate('/login')}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z"/>
                   </svg>

@@ -25,7 +25,13 @@ export default function Login() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/submit');
+      
+      // Check if user is admin
+      if (email.toLowerCase() === 'admin@civiccurator.com') {
+        navigate('/admin');
+      } else {
+        navigate('/submit');
+      }
     } catch (err) {
       setError(friendlyError(err.code));
     } finally {
@@ -38,8 +44,14 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-      navigate('/submit');
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      const user = result.user;
+      
+      if (user.email?.toLowerCase() === 'admin@civiccurator.com') {
+        navigate('/admin');
+      } else {
+        navigate('/submit');
+      }
     } catch (err) {
       setError(friendlyError(err.code));
     } finally {
