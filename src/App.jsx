@@ -7,6 +7,7 @@ import Register from './Register'
 import SubmitIdea from './SubmitIdea'
 import Community from './Community'
 import AdminPortal from './AdminPortal'
+import UserDashboard from './UserDashboard'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/submit" element={<SubmitIdea />} />
         <Route path="/community" element={<Community />} />
         <Route path="/admin" element={<AdminPortal />} />
+        <Route path="/user-dashboard" element={<UserDashboard />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>

@@ -1,10 +1,21 @@
 // src/Dashboard.jsx
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { auth } from './firebase'
+import { onAuthStateChanged } from 'firebase/auth'
 import './Dashboard.css'
 
 function Dashboard() {
   const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser)
+    })
+    return () => unsubscribe()
+  }, [])
+
   return (
     <div className="app-container">
       {/* ── NAVBAR ── */}
@@ -27,8 +38,14 @@ function Dashboard() {
               </svg>
               <input type="text" className="search-input" placeholder="Search initiatives..." />
             </div>
-            <button className="btn-nav-login" onClick={() => navigate('/login')}>Login</button>
-            <button className="btn-nav-register" onClick={() => navigate('/register')}>Register</button>
+            {user ? (
+              <button className="btn-nav-login" onClick={() => navigate('/user-dashboard')}>My Dashboard</button>
+            ) : (
+              <>
+                <button className="btn-nav-login" onClick={() => navigate('/login')}>Login</button>
+                <button className="btn-nav-register" onClick={() => navigate('/register')}>Register</button>
+              </>
+            )}
           </div>
         </div>
       </nav>

@@ -30,7 +30,7 @@ export default function Login() {
       if (email.toLowerCase() === 'admin@civiccurator.com') {
         navigate('/admin');
       } else {
-        navigate('/submit');
+        navigate('/user-dashboard');
       }
     } catch (err) {
       setError(friendlyError(err.code));
@@ -50,7 +50,7 @@ export default function Login() {
       if (user.email?.toLowerCase() === 'admin@civiccurator.com') {
         navigate('/admin');
       } else {
-        navigate('/submit');
+        navigate('/user-dashboard');
       }
     } catch (err) {
       setError(friendlyError(err.code));

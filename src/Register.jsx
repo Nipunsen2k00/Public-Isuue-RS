@@ -3,7 +3,8 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth, db, storage } from './firebase';
 import './Register.css';
 
 /* ── helpers ── */
@@ -122,7 +123,15 @@ export default function Register() {
       // 2. Update display name
       await updateProfile(user, { displayName: form.fullName });
 
-      // 3. Save profile to Firestore
+      // 3. Upload profile picture to Firebase Storage (if selected)
+      let profilePicUrl = '';
+      if (profilePic) {
+        const storageRef = ref(storage, `profilePics/${user.uid}/${Date.now()}_${profilePic.name}`);
+        const snapshot = await uploadBytes(storageRef, profilePic);
+        profilePicUrl = await getDownloadURL(snapshot.ref);
+      }
+
+      // 4. Save profile to Firestore
       await setDoc(doc(db, 'users', user.uid), {
         uid:         user.uid,
         email:       form.email,
@@ -130,13 +139,14 @@ export default function Register() {
         username:    form.username,
         phone:       form.phone   || '',
         role:        form.role,
+        profilePicUrl: profilePicUrl || '',
         createdAt:   serverTimestamp(),
       });
 
       if (form.email.toLowerCase() === 'admin@civiccurator.com') {
         navigate('/admin');
       } else {
-        navigate('/submit');
+        navigate('/user-dashboard');
       }
     } catch (err) {
       setFirebaseError(friendlyRegError(err.code));

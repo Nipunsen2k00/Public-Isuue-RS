@@ -135,7 +135,7 @@ export default function SubmitIdea() {
           <h2 className="si-success-title">Initiative Submitted!</h2>
           <p className="si-success-sub">Your report <strong>"{title}"</strong> is under review. We'll notify you within 48 hours.</p>
           <div className="si-success-actions">
-            <button className="si-btn-primary" onClick={() => navigate('/')}>Back to Dashboard</button>
+            <button className="si-btn-primary" onClick={() => navigate('/user-dashboard')}>View Dashboard</button>
             <button className="si-btn-ghost" onClick={() => { setSubmitted(false); setTitle(''); setCategory(''); setDescription(''); setFiles([]); setTouched({}); }}>Submit Another</button>
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function SubmitIdea() {
               </svg>
               <span className="si-notif-dot"/>
             </button>
-            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop" alt="Profile" className="si-avatar" onClick={() => navigate('/login')} />
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop" alt="Profile" className="si-avatar" onClick={() => navigate('/user-dashboard')} />
           </div>
         </div>
       </nav>
