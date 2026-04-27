@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  onAuthStateChanged,
 } from 'firebase/auth';
 import { auth } from './firebase';
 import './Login.css';
@@ -16,6 +17,39 @@ export default function Login() {
   const [showPw,     setShowPw]     = useState(false);
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState('');
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  /* ── Check if user is already logged in ── */
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        // User is already logged in, redirect to dashboard
+        if (currentUser.email?.toLowerCase() === 'admin@civiccurator.com') {
+          navigate('/admin');
+        } else {
+          navigate('/user-dashboard');
+        }
+      } else {
+        setCheckingAuth(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
+  if (checkingAuth) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '18px',
+        color: '#666'
+      }}>
+        Loading...
+      </div>
+    );
+  }
 
   /* ── Email / Password sign-in ── */
   const handleSubmit = async (e) => {

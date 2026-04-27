@@ -8,10 +8,12 @@ import './Dashboard.css'
 function Dashboard() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
+      setLoading(false)
     })
     return () => unsubscribe()
   }, [])
@@ -38,14 +40,14 @@ function Dashboard() {
               </svg>
               <input type="text" className="search-input" placeholder="Search initiatives..." />
             </div>
-            {user ? (
+            {!loading && user ? (
               <button className="btn-nav-login" onClick={() => navigate('/user-dashboard')}>My Dashboard</button>
-            ) : (
+            ) : !loading ? (
               <>
                 <button className="btn-nav-login" onClick={() => navigate('/login')}>Login</button>
                 <button className="btn-nav-register" onClick={() => navigate('/register')}>Register</button>
               </>
-            )}
+            ) : null}
           </div>
         </div>
       </nav>
