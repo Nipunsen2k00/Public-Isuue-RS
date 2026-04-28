@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, onSnapshot, doc, updateDoc, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, orderBy, query, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import './AdminPortal.css';
 
@@ -20,6 +20,7 @@ const IconReports     = () => <svg width="20" height="20" viewBox="0 0 24 24" fi
 const IconProposals   = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.2 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>;
 const IconAnalytics   = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>;
 const IconSettings    = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
+const IconContact     = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
 const IconSearch      = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 const IconPlus        = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
 const IconUpArrow     = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>;
@@ -46,6 +47,13 @@ const AdminPortal = () => {
     const [searchQuery,  setSearchQuery]  = useState('');
     const [currentPage,  setCurrentPage]  = useState(1);
     const [expandedId,   setExpandedId]   = useState(null);   // row expanded for details
+    const [contactEdit, setContactEdit] = useState({
+        email: '',
+        phone: '',
+        address: '',
+        hours: ''
+    });
+    const [savingContact, setSavingContact] = useState(false);
 
     /* ── Real-time Firestore listener ── */
     useEffect(() => {
@@ -87,6 +95,36 @@ const AdminPortal = () => {
         return () => unsub();
     }, []);
 
+    /* ── Fetch Contact Info ── */
+    useEffect(() => {
+        const fetchContact = async () => {
+            try {
+                const docRef = doc(db, 'settings', 'contact');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setContactEdit(docSnap.data());
+                }
+            } catch (err) {
+                console.error('Error fetching contact:', err);
+            }
+        };
+        fetchContact();
+    }, []);
+
+    const handleSaveContact = async (e) => {
+        e.preventDefault();
+        setSavingContact(true);
+        try {
+            await setDoc(doc(db, 'settings', 'contact'), contactEdit);
+            alert('Contact information updated successfully!');
+        } catch (err) {
+            console.error('Error saving contact:', err);
+            alert('Failed to update contact information.');
+        } finally {
+            setSavingContact(false);
+        }
+    };
+
     /* ── Update status in Firestore ── */
     const handleStatusChange = async (id, newStatus) => {
         setReports(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
@@ -115,7 +153,7 @@ const AdminPortal = () => {
                 </div>
 
                 <nav className="ap-nav">
-                    {[['Overview',IconOverview],['Reports',IconReports],['Proposals',IconProposals],['Analytics',IconAnalytics]].map(([tab, Icon]) => (
+                    {[['Overview',IconOverview],['Reports',IconReports],['Proposals',IconProposals],['Analytics',IconAnalytics],['Contact',IconContact]].map(([tab, Icon]) => (
                         <a key={tab} href="#" className={`ap-nav-item ${activeTab===tab?'active':''}`}
                            onClick={e=>{e.preventDefault();setActiveTab(tab);}}>
                             <div className="ap-active-indicator"/>
@@ -144,7 +182,7 @@ const AdminPortal = () => {
                 <header className="ap-header">
                     <div className="ap-header-title">
                         <h1>{activeTab}</h1>
-                        <p>Review, approve, and resolve community-submitted reports.</p>
+                        <p>{activeTab === 'Contact' ? 'Update the public contact information shown on the Contact page.' : 'Review, approve, and resolve community-submitted reports.'}</p>
                     </div>
                     <div className="ap-header-actions">
                         <div className="ap-search-bar">
@@ -158,218 +196,281 @@ const AdminPortal = () => {
                     </div>
                 </header>
 
-                {/* Stats row */}
-                <div className="ap-stats-row">
-                    <div className="ap-stat-card">
-                        <div className="ap-stat-content">
-                            <h3 className="ap-stat-title">TOTAL SUBMISSIONS</h3>
-                            <div className="ap-stat-value">{reports.length}</div>
-                            <div className="ap-stat-trend positive"><IconUpArrow/><span>Live from Firestore</span></div>
+                {/* Reports Content */}
+                {activeTab === 'Reports' && (
+                    <>
+                        {/* Stats row */}
+                        <div className="ap-stats-row">
+                            <div className="ap-stat-card">
+                                <div className="ap-stat-content">
+                                    <h3 className="ap-stat-title">TOTAL SUBMISSIONS</h3>
+                                    <div className="ap-stat-value">{reports.length}</div>
+                                    <div className="ap-stat-trend positive"><IconUpArrow/><span>Live from Firestore</span></div>
+                                </div>
+                                <div className="ap-stat-icon-wrapper blue"><IconClipboard/></div>
+                            </div>
+
+                            <div className="ap-stat-card">
+                                <div className="ap-stat-content">
+                                    <h3 className="ap-stat-title">AWAITING REVIEW</h3>
+                                    <div className="ap-stat-value">{pendingCount}</div>
+                                    <div className="ap-stat-desc">Requires attention</div>
+                                </div>
+                                <div className="ap-stat-icon-wrapper yellow"><IconClipboardClock/></div>
+                            </div>
+
+                            <div className="ap-stat-card">
+                                <div className="ap-stat-content">
+                                    <h3 className="ap-stat-title">APPROVED & LIVE</h3>
+                                    <div className="ap-stat-value">{approvedCount}</div>
+                                    <div className="ap-stat-desc">Visible on Community page</div>
+                                </div>
+                                <div className="ap-stat-icon-wrapper green"><IconCheckCircle/></div>
+                            </div>
                         </div>
-                        <div className="ap-stat-icon-wrapper blue"><IconClipboard/></div>
-                    </div>
 
-                    <div className="ap-stat-card">
-                        <div className="ap-stat-content">
-                            <h3 className="ap-stat-title">AWAITING REVIEW</h3>
-                            <div className="ap-stat-value">{pendingCount}</div>
-                            <div className="ap-stat-desc">Requires attention</div>
-                        </div>
-                        <div className="ap-stat-icon-wrapper yellow"><IconClipboardClock/></div>
-                    </div>
+                        {/* Reports table */}
+                        <div className="ap-reports-section">
+                            <div className="ap-reports-header">
+                                <h2>Community Submissions</h2>
+                                <a href="#" className="ap-view-all" onClick={e=>{e.preventDefault();setSearchQuery('');}}>
+                                    Clear filter &rarr;
+                                </a>
+                            </div>
 
-                    <div className="ap-stat-card">
-                        <div className="ap-stat-content">
-                            <h3 className="ap-stat-title">APPROVED & LIVE</h3>
-                            <div className="ap-stat-value">{approvedCount}</div>
-                            <div className="ap-stat-desc">Visible on Community page</div>
-                        </div>
-                        <div className="ap-stat-icon-wrapper green"><IconCheckCircle/></div>
-                    </div>
-                </div>
-
-                {/* Reports table */}
-                <div className="ap-reports-section">
-                    <div className="ap-reports-header">
-                        <h2>Community Submissions</h2>
-                        <a href="#" className="ap-view-all" onClick={e=>{e.preventDefault();setSearchQuery('');}}>
-                            Clear filter &rarr;
-                        </a>
-                    </div>
-
-                    {loading ? (
-                        <div className="ap-loading">
-                            <div className="ap-spinner"/>
-                            <span>Loading reports from Firestore…</span>
-                        </div>
-                    ) : (
-                    <table className="ap-reports-table">
-                        <thead>
-                            <tr>
-                                <th>SUBMISSION DETAILS</th>
-                                <th>CATEGORY</th>
-                                <th>URGENCY</th>
-                                <th>STATUS</th>
-                                <th>ACTIONS</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredReports.map(report => (
-                                <>
-                                <tr key={report.id} className={expandedId===report.id ? 'row-expanded' : ''}>
-                                    <td>
-                                        <div className="ap-issue-cell">
-                                            <div className={`ap-issue-img placeholder-${report.placeholderId}`}/>
-                                            <div className="ap-issue-info">
-                                                <div className="ap-issue-title">{report.title}</div>
-                                                <div className="ap-issue-meta">
-                                                    By <strong>{report.author}</strong> &bull; {report.time}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span className={`ap-badge ${report.categoryClass}`}>{report.category}</span></td>
-                                    <td>
-                                        <span className="ap-urgency-tag" style={{color: URGENCY_COLORS[report.urgency]||'#94a3b8', background: (URGENCY_COLORS[report.urgency]||'#94a3b8')+'18', border:`1px solid ${(URGENCY_COLORS[report.urgency]||'#94a3b8')}40`}}>
-                                            {report.urgency}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`ap-status ${
-                                            report.status==='APPROVED' ? 'status-approved'
-                                          : report.status==='RESOLVED' ? 'status-resolved'
-                                          : 'status-pending'}`}>
-                                            <span className="ap-status-dot"/> {report.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="ap-action-group">
-                                            {report.status === 'PENDING' && (
-                                                <>
-                                                <button className="ap-action-btn ap-btn-approve"
-                                                    onClick={() => handleStatusChange(report.id, 'APPROVED')}>
-                                                    ✓ Approve
-                                                </button>
-                                                <button className="ap-action-btn ap-btn-reject"
-                                                    onClick={() => handleStatusChange(report.id, 'RESOLVED')}>
-                                                    Dismiss
-                                                </button>
-                                                </>
-                                            )}
-                                            {report.status === 'APPROVED' && (
-                                                <button className="ap-action-btn"
-                                                    onClick={() => handleStatusChange(report.id, 'PENDING')}>
-                                                    Revoke
-                                                </button>
-                                            )}
-                                            {report.status === 'RESOLVED' && (
-                                                <button className="ap-action-btn"
-                                                    onClick={() => handleStatusChange(report.id, 'PENDING')}>
-                                                    Reopen
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <button className="ap-expand-btn"
-                                            onClick={() => setExpandedId(expandedId===report.id ? null : report.id)}
-                                            title="View details">
-                                            <IconChevron open={expandedId===report.id}/>
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                {/* ── Expanded detail row ── */}
-                                {expandedId === report.id && (
-                                <tr key={`${report.id}-detail`} className="ap-detail-row">
-                                    <td colSpan="6">
-                                        <div className="ap-detail-panel">
-                                            <div className="ap-detail-grid">
-                                                <div className="ap-detail-block">
-                                                    <div className="ap-detail-label">Description</div>
-                                                    <div className="ap-detail-value ap-detail-desc">{report.description}</div>
-                                                </div>
-                                                <div className="ap-detail-block">
-                                                    <div className="ap-detail-label">Submitted By</div>
-                                                    <div className="ap-detail-value">{report.author}</div>
-                                                    <div className="ap-detail-sub">{report.authorEmail}</div>
-                                                </div>
-                                                <div className="ap-detail-block">
-                                                    <div className="ap-detail-label">Category</div>
-                                                    <div className="ap-detail-value">{report.category}</div>
-                                                </div>
-                                                <div className="ap-detail-block">
-                                                    <div className="ap-detail-label">Urgency</div>
-                                                    <div className="ap-detail-value" style={{color: URGENCY_COLORS[report.urgency]||'inherit'}}>
-                                                        {report.urgency}
+                            {loading ? (
+                                <div className="ap-loading">
+                                    <div className="ap-spinner"/>
+                                    <span>Loading reports from Firestore…</span>
+                                </div>
+                            ) : (
+                            <table className="ap-reports-table">
+                                <thead>
+                                    <tr>
+                                        <th>SUBMISSION DETAILS</th>
+                                        <th>CATEGORY</th>
+                                        <th>URGENCY</th>
+                                        <th>STATUS</th>
+                                        <th>ACTIONS</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredReports.map(report => (
+                                        <React.Fragment key={report.id}>
+                                        <tr className={expandedId===report.id ? 'row-expanded' : ''}>
+                                            <td>
+                                                <div className="ap-issue-cell">
+                                                    <div className={`ap-issue-img placeholder-${report.placeholderId}`}/>
+                                                    <div className="ap-issue-info">
+                                                        <div className="ap-issue-title">{report.title}</div>
+                                                        <div className="ap-issue-meta">
+                                                            By <strong>{report.author}</strong> &bull; {report.time}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className="ap-detail-block">
-                                                    <div className="ap-detail-label">Submitted</div>
-                                                    <div className="ap-detail-value">{report.time}</div>
-                                                </div>
-                                                <div className="ap-detail-block">
-                                                    <div className="ap-detail-label">Files Attached</div>
-                                                    <div className="ap-detail-value">{report.fileCount} file{report.fileCount!==1?'s':''}</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="ap-detail-actions">
-                                                {report.status === 'PENDING' && (
-                                                    <>
-                                                    <button className="ap-action-btn ap-btn-approve ap-btn-lg"
-                                                        onClick={() => handleStatusChange(report.id,'APPROVED')}>
-                                                        ✓ Approve — Publish to Community
-                                                    </button>
-                                                    <button className="ap-action-btn ap-btn-reject ap-btn-lg"
-                                                        onClick={() => handleStatusChange(report.id,'RESOLVED')}>
-                                                        Dismiss Report
-                                                    </button>
-                                                    </>
-                                                )}
-                                                {report.status === 'APPROVED' && (
-                                                    <div className="ap-detail-approved-msg">
-                                                        ✅ This report is <strong>live on the Community page</strong>.
-                                                        <button className="ap-action-btn" style={{marginLeft:16}}
-                                                            onClick={() => handleStatusChange(report.id,'PENDING')}>
-                                                            Revoke Approval
+                                            </td>
+                                            <td><span className={`ap-badge ${report.categoryClass}`}>{report.category}</span></td>
+                                            <td>
+                                                <span className="ap-urgency-tag" style={{color: URGENCY_COLORS[report.urgency]||'#94a3b8', background: (URGENCY_COLORS[report.urgency]||'#94a3b8')+'18', border:`1px solid ${(URGENCY_COLORS[report.urgency]||'#94a3b8')}40`}}>
+                                                    {report.urgency}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span className={`ap-status ${
+                                                    report.status==='APPROVED' ? 'status-approved'
+                                                  : report.status==='RESOLVED' ? 'status-resolved'
+                                                  : 'status-pending'}`}>
+                                                    <span className="ap-status-dot"/> {report.status}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="ap-action-group">
+                                                    {report.status === 'PENDING' && (
+                                                        <>
+                                                        <button className="ap-action-btn ap-btn-approve"
+                                                            onClick={() => handleStatusChange(report.id, 'APPROVED')}>
+                                                            ✓ Approve
                                                         </button>
-                                                    </div>
-                                                )}
-                                                {report.status === 'RESOLVED' && (
-                                                    <div className="ap-detail-approved-msg" style={{color:'#94a3b8'}}>
-                                                        This report was dismissed.
-                                                        <button className="ap-action-btn" style={{marginLeft:16}}
-                                                            onClick={() => handleStatusChange(report.id,'PENDING')}>
+                                                        <button className="ap-action-btn ap-btn-reject"
+                                                            onClick={() => handleStatusChange(report.id, 'RESOLVED')}>
+                                                            Dismiss
+                                                        </button>
+                                                        </>
+                                                    )}
+                                                    {report.status === 'APPROVED' && (
+                                                        <button className="ap-action-btn"
+                                                            onClick={() => handleStatusChange(report.id, 'PENDING')}>
+                                                            Revoke
+                                                        </button>
+                                                    )}
+                                                    {report.status === 'RESOLVED' && (
+                                                        <button className="ap-action-btn"
+                                                            onClick={() => handleStatusChange(report.id, 'PENDING')}>
                                                             Reopen
                                                         </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                )}
-                                </>
-                            ))}
-                            {filteredReports.length === 0 && (
-                                <tr>
-                                    <td colSpan="6" style={{textAlign:'center',padding:'40px',color:'#64748b'}}>
-                                        {searchQuery ? `No results for "${searchQuery}"` : 'No submissions yet.'}
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                    )}
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button className="ap-expand-btn"
+                                                    onClick={() => setExpandedId(expandedId===report.id ? null : report.id)}
+                                                    title="View details">
+                                                    <IconChevron open={expandedId===report.id}/>
+                                                </button>
+                                            </td>
+                                        </tr>
 
-                    <div className="ap-pagination">
-                        <div className="ap-pagination-info">
-                            Showing <strong>{filteredReports.length}</strong> of <strong>{reports.length}</strong> reports
+                                        {/* ── Expanded detail row ── */}
+                                        {expandedId === report.id && (
+                                        <tr key={`${report.id}-detail`} className="ap-detail-row">
+                                            <td colSpan="6">
+                                                <div className="ap-detail-panel">
+                                                    <div className="ap-detail-grid">
+                                                        <div className="ap-detail-block">
+                                                            <div className="ap-detail-label">Description</div>
+                                                            <div className="ap-detail-value ap-detail-desc">{report.description}</div>
+                                                        </div>
+                                                        <div className="ap-detail-block">
+                                                            <div className="ap-detail-label">Submitted By</div>
+                                                            <div className="ap-detail-value">{report.author}</div>
+                                                            <div className="ap-detail-sub">{report.authorEmail}</div>
+                                                        </div>
+                                                        <div className="ap-detail-block">
+                                                            <div className="ap-detail-label">Category</div>
+                                                            <div className="ap-detail-value">{report.category}</div>
+                                                        </div>
+                                                        <div className="ap-detail-block">
+                                                            <div className="ap-detail-label">Urgency</div>
+                                                            <div className="ap-detail-value" style={{color: URGENCY_COLORS[report.urgency]||'inherit'}}>
+                                                                {report.urgency}
+                                                            </div>
+                                                        </div>
+                                                        <div className="ap-detail-block">
+                                                            <div className="ap-detail-label">Submitted</div>
+                                                            <div className="ap-detail-value">{report.time}</div>
+                                                        </div>
+                                                        <div className="ap-detail-block">
+                                                            <div className="ap-detail-label">Files Attached</div>
+                                                            <div className="ap-detail-value">{report.fileCount} file{report.fileCount!==1?'s':''}</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="ap-detail-actions">
+                                                        {report.status === 'PENDING' && (
+                                                            <>
+                                                            <button className="ap-action-btn ap-btn-approve ap-btn-lg"
+                                                                onClick={() => handleStatusChange(report.id,'APPROVED')}>
+                                                                ✓ Approve — Publish to Community
+                                                            </button>
+                                                            <button className="ap-action-btn ap-btn-reject ap-btn-lg"
+                                                                onClick={() => handleStatusChange(report.id,'RESOLVED')}>
+                                                                Dismiss Report
+                                                            </button>
+                                                            </>
+                                                        )}
+                                                        {report.status === 'APPROVED' && (
+                                                            <div className="ap-detail-approved-msg">
+                                                                ✅ This report is <strong>live on the Community page</strong>.
+                                                                <button className="ap-action-btn" style={{marginLeft:16}}
+                                                                    onClick={() => handleStatusChange(report.id,'PENDING')}>
+                                                                    Revoke Approval
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        {report.status === 'RESOLVED' && (
+                                                            <div className="ap-detail-approved-msg" style={{color:'#94a3b8'}}>
+                                                                This report was dismissed.
+                                                                <button className="ap-action-btn" style={{marginLeft:16}}
+                                                                    onClick={() => handleStatusChange(report.id,'PENDING')}>
+                                                                    Reopen
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        )}
+                                        </React.Fragment>
+                                    ))}
+                                    {filteredReports.length === 0 && (
+                                        <tr>
+                                            <td colSpan="6" style={{textAlign:'center',padding:'40px',color:'#64748b'}}>
+                                                {searchQuery ? `No results for "${searchQuery}"` : 'No submissions yet.'}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                            )}
+
+                            <div className="ap-pagination">
+                                <div className="ap-pagination-info">
+                                    Showing <strong>{filteredReports.length}</strong> of <strong>{reports.length}</strong> reports
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {/* Contact Edit Tab Content */}
+                {activeTab === 'Contact' && (
+                    <div className="ap-contact-edit">
+                        <div className="ap-stat-card" style={{maxWidth: '600px', margin: '2rem 0', padding: '2rem'}}>
+                            <form onSubmit={handleSaveContact}>
+                                <div style={{marginBottom: '1.5rem'}}>
+                                    <label style={{display:'block', marginBottom:'0.5rem', fontWeight:'600', color:'rgba(255,255,255,0.5)'}}>Email Address</label>
+                                    <input 
+                                        type="email" 
+                                        value={contactEdit.email} 
+                                        onChange={e => setContactEdit({...contactEdit, email: e.target.value})}
+                                        style={{width:'100%', padding:'0.75rem', borderRadius:'0.5rem', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'white'}}
+                                        required
+                                    />
+                                </div>
+                                <div style={{marginBottom: '1.5rem'}}>
+                                    <label style={{display:'block', marginBottom:'0.5rem', fontWeight:'600', color:'rgba(255,255,255,0.5)'}}>Phone Number</label>
+                                    <input 
+                                        type="text" 
+                                        value={contactEdit.phone} 
+                                        onChange={e => setContactEdit({...contactEdit, phone: e.target.value})}
+                                        style={{width:'100%', padding:'0.75rem', borderRadius:'0.5rem', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'white'}}
+                                        required
+                                    />
+                                </div>
+                                <div style={{marginBottom: '1.5rem'}}>
+                                    <label style={{display:'block', marginBottom:'0.5rem', fontWeight:'600', color:'rgba(255,255,255,0.5)'}}>Office Address</label>
+                                    <input 
+                                        type="text" 
+                                        value={contactEdit.address} 
+                                        onChange={e => setContactEdit({...contactEdit, address: e.target.value})}
+                                        style={{width:'100%', padding:'0.75rem', borderRadius:'0.5rem', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'white'}}
+                                        required
+                                    />
+                                </div>
+                                <div style={{marginBottom: '2rem'}}>
+                                    <label style={{display:'block', marginBottom:'0.5rem', fontWeight:'600', color:'rgba(255,255,255,0.5)'}}>Working Hours</label>
+                                    <input 
+                                        type="text" 
+                                        value={contactEdit.hours} 
+                                        onChange={e => setContactEdit({...contactEdit, hours: e.target.value})}
+                                        style={{width:'100%', padding:'0.75rem', borderRadius:'0.5rem', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'white'}}
+                                        required
+                                    />
+                                </div>
+                                <button 
+                                    type="submit" 
+                                    className="ap-btn-primary" 
+                                    style={{width: '100%', justifyContent: 'center'}}
+                                    disabled={savingContact}
+                                >
+                                    {savingContact ? 'Saving...' : 'Update Contact Information'}
+                                </button>
+                            </form>
                         </div>
                     </div>
-                </div>
+                )}
             </main>
         </div>
     );

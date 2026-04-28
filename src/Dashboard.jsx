@@ -142,7 +142,7 @@ function Dashboard() {
             <div className="nav-links">
               <span className="nav-link active" style={{cursor:'pointer'}}>Dashboard</span>
               <span className="nav-link" onClick={() => navigate('/community')} style={{cursor:'pointer'}}>Community</span>
-              <span className="nav-link" style={{cursor:'pointer'}}>Impact</span>
+              <span className="nav-link" onClick={() => navigate('/contact')} style={{cursor:'pointer'}}>Contact</span>
             </div>
           </div>
           <div className="nav-right">
@@ -469,24 +469,8 @@ function Dashboard() {
                   )}
                 </div>
 
-                <div className="impact-card">
-                  <div className="impact-header">Impact Score</div>
-                  <svg className="trend-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-                    <polyline points="16 7 22 7 22 13"/>
-                  </svg>
-                  <div className="impact-score">{stats.resolutionRate}%</div>
-                  <p className="impact-desc">Resolution rate up {stats.ideaChange}% this month.</p>
-                  <div className="impact-sparkline">
-                    <div className="spark-bar" style={{height:'30%'}}></div>
-                    <div className="spark-bar" style={{height:'50%'}}></div>
-                    <div className="spark-bar" style={{height:'40%'}}></div>
-                    <div className="spark-bar" style={{height:'70%'}}></div>
-                    <div className="spark-bar" style={{height:'55%'}}></div>
-                    <div className="spark-bar" style={{height:'80%'}}></div>
-                    <div className="spark-bar active" style={{height:'100%'}}></div>
-                  </div>
-                </div>
+                {/* Removed impact-card */}
+
               </div>
             </div>
           </div>
@@ -537,9 +521,9 @@ function Dashboard() {
           <div className="footer-links">
             <div className="link-column">
               <span className="link-title">Platform</span>
-              <a href="#" className="footer-link">Dashboard</a>
-              <a href="#" className="footer-link">Community</a>
-              <a href="#" className="footer-link">Impact Score</a>
+              <a href="#" className="footer-link" onClick={(e) => { e.preventDefault(); navigate('/'); }}>Dashboard</a>
+              <a href="#" className="footer-link" onClick={(e) => { e.preventDefault(); navigate('/community'); }}>Community</a>
+              <a href="#" className="footer-link" onClick={(e) => { e.preventDefault(); navigate('/contact'); }}>Contact</a>
             </div>
             <div className="link-column">
               <span className="link-title">Connect</span>

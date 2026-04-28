@@ -101,7 +101,7 @@ export default function Community() {
             <div className="nav-links">
               <span className="nav-link" onClick={() => navigate('/')}>Dashboard</span>
               <span className="nav-link community-active">Community</span>
-              <span className="nav-link" onClick={() => alert('Impact page coming soon!')}>Impact</span>
+              <span className="nav-link" onClick={() => navigate('/contact')}>Contact</span>
             </div>
           </div>
           <div className="nav-right">

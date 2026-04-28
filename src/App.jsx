@@ -9,6 +9,7 @@ import Community from './Community'
 import AdminPortal from './AdminPortal'
 import UserDashboard from './UserDashboard'
 import ProtectedRoute from './ProtectedRoute'
+import Contact from './Contact'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
         <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

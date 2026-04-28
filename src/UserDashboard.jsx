@@ -120,7 +120,7 @@ export default function UserDashboard() {
             <div className="ud-nav-links">
               <span className="ud-nav-link active">Dashboard</span>
               <span className="ud-nav-link" onClick={() => navigate('/community')}>Community</span>
-              <span className="ud-nav-link">Impact</span>
+              <span className="ud-nav-link" onClick={() => navigate('/contact')}>Contact</span>
             </div>
           </div>
           <div className="ud-nav-right">
