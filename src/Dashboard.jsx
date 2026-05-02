@@ -10,6 +10,7 @@ function Dashboard() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalReports: 0,
@@ -139,10 +140,11 @@ function Dashboard() {
             <div className="brand" onClick={() => navigate('/')} style={{cursor:'pointer'}}>
               <span className="civic">Civic</span><span className="curator"> Curator</span>
             </div>
-            <div className="nav-links">
-              <span className="nav-link active" style={{cursor:'pointer'}}>Dashboard</span>
+            <div className={`nav-links ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+              <span className="nav-link active" onClick={() => { navigate('/'); setMobileMenuOpen(false); }} style={{cursor:'pointer'}}>Dashboard</span>
               <span className="nav-link" onClick={(e) => { 
                 e.preventDefault(); 
+                setMobileMenuOpen(false);
                 if (window.location.pathname === '/') {
                   document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
                 } else {
@@ -152,11 +154,18 @@ function Dashboard() {
                   }, 100);
                 }
               }} style={{cursor:'pointer'}}>About</span>
-              <span className="nav-link" onClick={() => navigate('/community')} style={{cursor:'pointer'}}>Community</span>
-              <span className="nav-link" onClick={() => navigate('/contact')} style={{cursor:'pointer'}}>Contact</span>
+              <span className="nav-link" onClick={() => { navigate('/community'); setMobileMenuOpen(false); }} style={{cursor:'pointer'}}>Community</span>
+              <span className="nav-link" onClick={() => { navigate('/contact'); setMobileMenuOpen(false); }} style={{cursor:'pointer'}}>Contact</span>
             </div>
           </div>
           <div className="nav-right">
+            <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              )}
+            </button>
             <div className="search-container">
               <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -167,8 +176,10 @@ function Dashboard() {
               <button className="btn-nav-login" onClick={() => navigate('/user-dashboard')}>My Dashboard</button>
             ) : !loading ? (
               <>
-                <button className="btn-nav-login" onClick={() => navigate('/login')}>Login</button>
-                <button className="btn-nav-register" onClick={() => navigate('/register')}>Register</button>
+                <div className="nav-right-buttons">
+                  <button className="btn-nav-login" onClick={() => navigate('/login')}>Login</button>
+                  <button className="btn-nav-register" onClick={() => navigate('/register')}>Register</button>
+                </div>
               </>
             ) : null}
           </div>

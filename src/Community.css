@@ -543,11 +543,50 @@
 
 /* ── Mobile (≤ 600px) ── */
 @media (max-width: 600px) {
-  /* Navbar: collapse search & links */
-  .community-page .search-container { display: none; }
-  .community-page .nav-links        { gap: 0; }
-  .community-page .nav-link         { padding: 6px 10px; font-size: 13px; }
-  .community-page .nav-content      { height: 62px; }
+  /* Navbar: drawer layout */
+  .community-page .nav-content      { height: auto !important; flex-direction: row !important; flex-wrap: wrap !important; padding: 15px 5% !important; gap: 15px !important; position: relative !important; }
+  .community-page .nav-left         { width: 100% !important; justify-content: space-between !important; align-items: center !important; }
+  
+  .community-page .nav-links { 
+    display: none !important; 
+    width: 100% !important; 
+    flex-direction: column !important; 
+    gap: 10px !important; 
+    padding: 20px 0 !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+  }
+  
+  .community-page .nav-links.mobile-open {
+    display: flex !important;
+  }
+
+  .community-page .nav-link {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    padding: 12px 20px !important;
+    background: rgba(255,255,255,0.05) !important;
+  }
+
+  .community-page .mobile-menu-toggle {
+    display: flex !important;
+    background: transparent !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    color: white !important;
+    padding: 8px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    order: 2 !important;
+  }
+
+  .community-page .nav-right        { width: 100% !important; flex-direction: column !important; align-items: stretch !important; gap: 12px !important; }
+  .community-page .search-container { display: flex !important; width: 100% !important; order: 1 !important; }
+  .community-page .community-search { width: 100% !important; height: 44px !important; }
+  .community-page .community-search:focus { width: 100% !important; }
+  .community-page .nav-right-buttons { display: flex !important; gap: 10px !important; width: 100% !important; order: 3 !important; }
+  .community-page .nav-btn-login    { flex: 1 !important; padding: 10px !important; font-size: 14px !important; text-align: center !important; background: transparent !important; border: 1px solid rgba(255,255,255,0.2) !important; color: white !important; border-radius: 8px !important; cursor: pointer !important; }
+  .community-page .nav-btn-signup   { flex: 1 !important; padding: 10px !important; font-size: 14px !important; text-align: center !important; background: #6366f1 !important; border: none !important; color: white !important; border-radius: 8px !important; cursor: pointer !important; font-weight: 600 !important; }
+  .community-page .bell-icon        { display: none !important; } 
+  .community-page .profile-pic      { align-self: flex-start !important; margin-top: 10px !important; }
 
   /* Hero */
   .community-hero               { padding: 36px 5%; }

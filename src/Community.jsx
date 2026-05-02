@@ -24,6 +24,7 @@ export default function Community() {
   const [loading,      setLoading]      = useState(true);
   const [feedError,    setFeedError]    = useState('');
   const [user,         setUser]         = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   /* ── Check Auth State ── */
   useEffect(() => {
@@ -108,13 +109,32 @@ export default function Community() {
               <span className="civic">Civic</span>
               <span className="curator"> Curator</span>
             </div>
-            <div className="nav-links">
-              <span className="nav-link" onClick={() => navigate('/')}>Dashboard</span>
+            <div className={`nav-links ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+              <span className="nav-link" onClick={() => { navigate('/'); setMobileMenuOpen(false); }}>Dashboard</span>
+              <span className="nav-link" onClick={(e) => { 
+                e.preventDefault(); 
+                setMobileMenuOpen(false);
+                if (window.location.pathname === '/') {
+                  document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  navigate('/');
+                  setTimeout(() => {
+                    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }
+              }}>About</span>
               <span className="nav-link community-active">Community</span>
-              <span className="nav-link" onClick={() => navigate('/contact')}>Contact</span>
+              <span className="nav-link" onClick={() => { navigate('/contact'); setMobileMenuOpen(false); }}>Contact</span>
             </div>
           </div>
           <div className="nav-right">
+            <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              )}
+            </button>
             <div className="search-container">
               <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -137,9 +157,9 @@ export default function Community() {
                 onClick={() => navigate('/user-dashboard')}
               />
             ) : (
-              <div className="nav-auth-btns" style={{display:'flex', gap:'10px', marginLeft: '10px'}}>
-                <button className="nav-btn-login" onClick={() => navigate('/login')} style={{background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'white', padding:'6px 16px', borderRadius:'6px', cursor:'pointer', fontSize:'13px'}}>Log In</button>
-                <button className="nav-btn-signup" onClick={() => navigate('/register')} style={{background:'#6366f1', border:'none', color:'white', padding:'6px 16px', borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontWeight:'500'}}>Sign Up</button>
+              <div className="nav-right-buttons">
+                <button className="nav-btn-login" onClick={() => navigate('/login')}>Log In</button>
+                <button className="nav-btn-signup" onClick={() => navigate('/register')}>Sign Up</button>
               </div>
             )}
           </div>
