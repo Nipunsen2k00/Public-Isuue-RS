@@ -1,0 +1,119 @@
+.legal-page {
+    background-color: #030712;
+    color: #f3f4f6;
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+}
+
+.legal-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.legal-nav {
+    background: rgba(3, 7, 18, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 1rem 0;
+}
+
+.legal-nav .legal-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.legal-brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: -0.025em;
+}
+
+.legal-brand .civic {
+    color: #6366f1;
+}
+
+.legal-brand .curator {
+    color: #fff;
+}
+
+.legal-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.legal-back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.legal-content {
+    padding-top: 4rem;
+    padding-bottom: 6rem;
+}
+
+.legal-content h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, #fff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.legal-date {
+    color: #6366f1;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.legal-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.legal-content p {
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+}
+
+.legal-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 4rem 0;
+}
+
+.legal-footer {
+    padding: 3rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    text-align: center;
+    color: #4b5563;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+    .legal-content h1 {
+        font-size: 2rem;
+    }
+}

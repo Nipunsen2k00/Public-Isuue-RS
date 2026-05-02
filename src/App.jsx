@@ -10,6 +10,7 @@ import AdminPortal from './AdminPortal'
 import UserDashboard from './UserDashboard'
 import ProtectedRoute from './ProtectedRoute'
 import Contact from './Contact'
+import Legal from './Legal'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/admin" element={<ProtectedRoute><AdminPortal /></ProtectedRoute>} />
         <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/legal" element={<Legal />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

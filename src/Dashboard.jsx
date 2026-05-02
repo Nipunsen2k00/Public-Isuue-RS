@@ -141,6 +141,17 @@ function Dashboard() {
             </div>
             <div className="nav-links">
               <span className="nav-link active" style={{cursor:'pointer'}}>Dashboard</span>
+              <span className="nav-link" onClick={(e) => { 
+                e.preventDefault(); 
+                if (window.location.pathname === '/') {
+                  document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  navigate('/');
+                  setTimeout(() => {
+                    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }
+              }} style={{cursor:'pointer'}}>About</span>
               <span className="nav-link" onClick={() => navigate('/community')} style={{cursor:'pointer'}}>Community</span>
               <span className="nav-link" onClick={() => navigate('/contact')} style={{cursor:'pointer'}}>Contact</span>
             </div>
@@ -318,8 +329,8 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* ── HOW IT WORKS ── */}
-        <section className="how-section">
+        {/* ── HOW IT WORKS (ABOUT US) ── */}
+        <section className="how-section" id="about">
           <div className="container">
             <div className="how-header">
               <span className="how-label">Simple Process</span>
@@ -513,7 +524,7 @@ function Dashboard() {
       <footer className="footer">
         <div className="container footer-content">
           <div className="footer-left">
-            <div className="brand">
+            <div className="brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
               <span className="civic">Civic</span><span className="curator"> Curator</span>
             </div>
             <p className="footer-tagline">Building stronger communities, one idea at a time.</p>
@@ -527,13 +538,23 @@ function Dashboard() {
             </div>
             <div className="link-column">
               <span className="link-title">Connect</span>
-              <a href="#" className="footer-link">About Us</a>
-              <a href="#" className="footer-link">Contact Support</a>
+              <a href="#" className="footer-link" onClick={(e) => { 
+                e.preventDefault(); 
+                if (window.location.pathname === '/') {
+                  document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  navigate('/');
+                  setTimeout(() => {
+                    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }
+              }}>About Us</a>
+              <a href="#" className="footer-link" onClick={(e) => { e.preventDefault(); navigate('/contact'); }}>Contact Support</a>
             </div>
             <div className="link-column">
               <span className="link-title">Legal</span>
-              <a href="#" className="footer-link">Privacy Policy</a>
-              <a href="#" className="footer-link">Terms of Service</a>
+              <a href="#" className="footer-link" onClick={(e) => { e.preventDefault(); navigate('/legal'); }}>Privacy Policy</a>
+              <a href="#" className="footer-link" onClick={(e) => { e.preventDefault(); navigate('/legal'); }}>Terms of Service</a>
             </div>
           </div>
         </div>
