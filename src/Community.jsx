@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import './Community.css';
 
 const CAT_TAG_CLASS = {
@@ -22,6 +23,15 @@ export default function Community() {
   const [feed,         setFeed]         = useState([]);
   const [loading,      setLoading]      = useState(true);
   const [feedError,    setFeedError]    = useState('');
+  const [user,         setUser]         = useState(null);
+
+  /* ── Check Auth State ── */
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsub();
+  }, []);
 
   /* ── Live feed: only APPROVED reports ── */
   useEffect(() => {
@@ -118,13 +128,20 @@ export default function Community() {
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
-            <img
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop"
-              alt="Profile"
-              className="profile-pic"
-              style={{width:38,height:38,borderRadius:'50%',cursor:'pointer',objectFit:'cover'}}
-              onClick={() => navigate('/login')}
-            />
+            {user ? (
+              <img
+                src={user.photoURL || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop"}
+                alt="Profile"
+                className="profile-pic"
+                style={{width:38,height:38,borderRadius:'50%',cursor:'pointer',objectFit:'cover'}}
+                onClick={() => navigate('/user-dashboard')}
+              />
+            ) : (
+              <div className="nav-auth-btns" style={{display:'flex', gap:'10px', marginLeft: '10px'}}>
+                <button className="nav-btn-login" onClick={() => navigate('/login')} style={{background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'white', padding:'6px 16px', borderRadius:'6px', cursor:'pointer', fontSize:'13px'}}>Log In</button>
+                <button className="nav-btn-signup" onClick={() => navigate('/register')} style={{background:'#6366f1', border:'none', color:'white', padding:'6px 16px', borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontWeight:'500'}}>Sign Up</button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
