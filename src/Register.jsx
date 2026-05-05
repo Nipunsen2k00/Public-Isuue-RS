@@ -1,7 +1,7 @@
 // src/Register.jsx
 import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from './firebase';
@@ -47,6 +47,7 @@ export default function Register() {
   const [touched,     setTouched]     = useState({});
   const [submitting,   setSubmitting]   = useState(false);
   const [firebaseError,setFirebaseError]= useState('');
+  const [googleLoading,setGoogleLoading]= useState(false);
 
   const strength = getPasswordStrength(form.password);
 
@@ -159,8 +160,30 @@ export default function Register() {
       case 'auth/email-already-in-use': return 'An account with this email already exists.';
       case 'auth/invalid-email':        return 'Please enter a valid email address.';
       case 'auth/weak-password':        return 'Password must be at least 6 characters.';
-      case 'auth/network-request-failed': return 'Network error. Check your connection.';
+      case 'auth/popup-blocked':        return 'Pop-up blocked. Please allow pop-ups and try again.';
+      case 'auth/operation-not-supported-in-this-environment': return 'Google Sign-In is not available in this environment.';
       default: return 'Something went wrong. Please try again.';
+    }
+  }
+
+  async function handleGoogleSignup() {
+    setFirebaseError('');
+    setGoogleLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(auth, provider);
+      
+      if (result.user.email?.toLowerCase() === 'admin@civiccurator.com') {
+        navigate('/admin');
+      } else {
+        navigate('/submit');
+      }
+    } catch (err) {
+      console.error('Google Sign-Up Error:', err.code, err.message);
+      setFirebaseError(friendlyRegError(err.code));
+    } finally {
+      setGoogleLoading(false);
     }
   }
 
@@ -323,17 +346,20 @@ export default function Register() {
 
               <div className="divider"><span>Or sign up with</span></div>
               <div className="social-register">
-                <button type="button" className="btn-social" onClick={async () => {
-                  try {
-                    const result = await signInWithPopup(auth, new GoogleAuthProvider());
-                    if (result.user.email?.toLowerCase() === 'admin@civiccurator.com') navigate('/admin');
-                    else navigate('/submit');
-                  } catch(e) {}
-                }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.531,6.489,2.531,12s4.49,10,10.014,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
-                  </svg>
-                  Google
+                <button type="button" className="btn-social" onClick={handleGoogleSignup} disabled={googleLoading}>
+                  {googleLoading ? (
+                    <>
+                      <span className="login-spinner"/>
+                      Signing up…
+                    </>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.531,6.489,2.531,12s4.49,10,10.014,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+                      </svg>
+                      Google
+                    </>
+                  )}
                 </button>
                 <button type="button" className="btn-social" onClick={() => navigate('/login')}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -78,7 +78,9 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
       if (user.email?.toLowerCase() === 'admin@civiccurator.com') {
@@ -87,6 +89,7 @@ export default function Login() {
         navigate('/user-dashboard');
       }
     } catch (err) {
+      console.error('Google Sign-In Error:', err.code, err.message);
       setError(friendlyError(err.code));
     } finally {
       setLoading(false);
@@ -270,9 +273,13 @@ function friendlyError(code) {
       return 'This account has been disabled. Contact support.';
     case 'auth/popup-closed-by-user':
       return 'Sign-in cancelled. Please try again.';
+    case 'auth/popup-blocked':
+      return 'Pop-up blocked. Please allow pop-ups and try again.';
     case 'auth/network-request-failed':
       return 'Network error. Check your connection and try again.';
+    case 'auth/operation-not-supported-in-this-environment':
+      return 'Google Sign-In is not available in this environment.';
     default:
-      return 'Something went wrong. Please try again.';
+      return `Error: ${code}. Please try again or use email/password sign-in.`;
   }
 }
