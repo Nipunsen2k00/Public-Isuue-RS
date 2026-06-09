@@ -124,14 +124,15 @@ export default function Register() {
       // 2. Update display name
       await updateProfile(user, { displayName: form.fullName });
 
+      // 2.5. Force token refresh to ensure auth propagates before writes
+      await user.getIdToken(true);
+
       // 3. Upload profile picture to Firebase Storage (if selected)
       // This is done in a separate try/catch so a storage permission issue
       // does NOT block the user from completing registration.
       let profilePicUrl = '';
       if (profilePic) {
         try {
-          // Force token refresh to ensure auth propagates before Storage write
-          await user.getIdToken(true);
           const storageRef = ref(storage, `profilePics/${user.uid}/${Date.now()}_${profilePic.name}`);
           const snapshot = await uploadBytes(storageRef, profilePic);
           profilePicUrl = await getDownloadURL(snapshot.ref);
@@ -159,7 +160,11 @@ export default function Register() {
         navigate('/user-dashboard');
       }
     } catch (err) {
-      console.error('Registration error:', err.code, err.message);
+      console.error('Registration error details:', {
+        code: err?.code,
+        message: err?.message,
+        fullError: err
+      });
       setFirebaseError(friendlyRegError(err?.code));
       setSubmitting(false);
     }
