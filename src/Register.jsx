@@ -125,11 +125,20 @@ export default function Register() {
       await updateProfile(user, { displayName: form.fullName });
 
       // 3. Upload profile picture to Firebase Storage (if selected)
+      // This is done in a separate try/catch so a storage permission issue
+      // does NOT block the user from completing registration.
       let profilePicUrl = '';
       if (profilePic) {
-        const storageRef = ref(storage, `profilePics/${user.uid}/${Date.now()}_${profilePic.name}`);
-        const snapshot = await uploadBytes(storageRef, profilePic);
-        profilePicUrl = await getDownloadURL(snapshot.ref);
+        try {
+          // Force token refresh to ensure auth propagates before Storage write
+          await user.getIdToken(true);
+          const storageRef = ref(storage, `profilePics/${user.uid}/${Date.now()}_${profilePic.name}`);
+          const snapshot = await uploadBytes(storageRef, profilePic);
+          profilePicUrl = await getDownloadURL(snapshot.ref);
+        } catch (storageErr) {
+          // Profile pic upload failed — log it but don't block registration
+          console.warn('Profile pic upload failed (non-fatal):', storageErr.code, storageErr.message);
+        }
       }
 
       // 4. Save profile to Firestore
@@ -150,19 +159,22 @@ export default function Register() {
         navigate('/user-dashboard');
       }
     } catch (err) {
-      setFirebaseError(friendlyRegError(err.code));
+      console.error('Registration error:', err.code, err.message);
+      setFirebaseError(friendlyRegError(err?.code));
       setSubmitting(false);
     }
   }
 
   function friendlyRegError(code) {
     switch (code) {
-      case 'auth/email-already-in-use': return 'An account with this email already exists.';
+      case 'auth/email-already-in-use': return 'An account with this email already exists. Try signing in instead.';
       case 'auth/invalid-email':        return 'Please enter a valid email address.';
       case 'auth/weak-password':        return 'Password must be at least 6 characters.';
       case 'auth/popup-blocked':        return 'Pop-up blocked. Please allow pop-ups and try again.';
+      case 'auth/network-request-failed': return 'Network error. Please check your connection and try again.';
+      case 'auth/too-many-requests':    return 'Too many attempts. Please wait a moment and try again.';
       case 'auth/operation-not-supported-in-this-environment': return 'Google Sign-In is not available in this environment.';
-      default: return 'Something went wrong. Please try again.';
+      default: return code ? `Error: ${code}` : 'Something went wrong. Please try again.';
     }
   }
 

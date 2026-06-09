@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Anyone can read profiles (needed for display names, avatars in community feed)
+      allow read: if true;
+      // Users can only write/edit their own profile
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Reports/Ideas collection rules
+    match /reports/{reportId} {
+      // Anyone can read approved reports (unauthenticated guest access for Community feed)
+      // Authenticated users can read any reports they authored
+      // Admin can read all reports
+      allow read: if resource.data.status == 'APPROVED' 
+                  || (request.auth != null && resource.data.authorId == request.auth.uid)
+                  || (request.auth != null && request.auth.token.email == 'admin@civiccurator.com');
+                  
+      // Authenticated users can create new reports/ideas (must be PENDING by default)
+      allow create: if request.auth != null 
+                    && request.resource.data.authorId == request.auth.uid
+                    && request.resource.data.status == 'PENDING';
+                    
+      // Anyone can upvote approved reports
+      // Admin can update any fields (status, etc.)
+      allow update: if (request.auth != null && request.auth.token.email == 'admin@civiccurator.com')
+                    || (resource.data.status == 'APPROVED'
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['upvotes']));
+                        
+      // Only admin can delete reports
+      allow delete: if request.auth != null && request.auth.token.email == 'admin@civiccurator.com';
+    }
+    
+    // Settings collection rules (for contact info, etc.)
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'admin@civiccurator.com';
+    }
+  }
+}

@@ -224,7 +224,7 @@ export default function Community() {
               <div className="empty-state" style={{color:'#ef4444'}}>
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <h3 style={{color:'#ef4444'}}>Could not load feed</h3>
-                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'0.85rem'}}>{feedError}</p>
+                <p style={{color:'rgba(15, 23, 42, 0.6)',fontSize:'0.85rem'}}>{feedError}</p>
               </div>
             )}
 
