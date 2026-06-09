@@ -131,6 +131,7 @@ export default function Register() {
       // This is done in a separate try/catch so a storage permission issue
       // does NOT block the user from completing registration.
       let profilePicUrl = '';
+      let picUploadWarning = '';
       if (profilePic) {
         try {
           const storageRef = ref(storage, `profilePics/${user.uid}/${Date.now()}_${profilePic.name}`);
@@ -139,6 +140,12 @@ export default function Register() {
         } catch (storageErr) {
           // Profile pic upload failed — log it but don't block registration
           console.warn('Profile pic upload failed (non-fatal):', storageErr.code, storageErr.message);
+          
+          if (storageErr.code === 'storage/quota-exceeded') {
+            picUploadWarning = 'Profile picture upload skipped: Storage quota exceeded. You can add a profile picture later.';
+          } else {
+            picUploadWarning = `Profile picture upload failed (${storageErr.code}). Registration completed. You can add a picture later.`;
+          }
         }
       }
 
@@ -158,6 +165,11 @@ export default function Register() {
         navigate('/admin');
       } else {
         navigate('/user-dashboard');
+      }
+      
+      // Show warning if picture upload failed but registration succeeded
+      if (picUploadWarning) {
+        console.warn(picUploadWarning);
       }
     } catch (err) {
       console.error('Registration error details:', {
