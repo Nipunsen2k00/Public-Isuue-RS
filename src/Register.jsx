@@ -153,6 +153,9 @@ export default function Register() {
       }
 
       // 4. Save profile to Firestore
+      // Use uploaded profile pic if available, otherwise fall back to photoURL from auth provider (Google, etc.)
+      const finalProfilePicUrl = profilePicUrl || user.photoURL || '';
+      
       await setDoc(doc(db, 'users', user.uid), {
         uid:         user.uid,
         email:       form.email,
@@ -160,7 +163,7 @@ export default function Register() {
         username:    form.username,
         phone:       form.phone   || '',
         role:        form.role,
-        profilePicUrl: profilePicUrl || '',
+        profilePicUrl: finalProfilePicUrl,
         createdAt:   serverTimestamp(),
       });
 

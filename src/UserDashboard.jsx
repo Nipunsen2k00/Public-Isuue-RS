@@ -143,17 +143,20 @@ export default function UserDashboard() {
             <div className="ud-profile-card">
               <div className="ud-profile-header">
                 <div className="ud-profile-pic-wrapper">
-                  {userProfile?.profilePicUrl ? (
+                  {userProfile?.profilePicUrl || user?.photoURL ? (
                     <img
-                      src={userProfile.profilePicUrl}
-                      alt={userProfile.fullName}
+                      src={userProfile?.profilePicUrl || user?.photoURL}
+                      alt={userProfile?.fullName || user?.displayName}
                       className="ud-profile-pic"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }}
                     />
-                  ) : (
-                    <div className="ud-profile-pic-placeholder">
-                      {userProfile?.fullName?.charAt(0).toUpperCase() || '?'}
-                    </div>
-                  )}
+                  ) : null}
+                  <div className="ud-profile-pic-placeholder" style={{display: userProfile?.profilePicUrl || user?.photoURL ? 'none' : 'flex'}}>
+                    {userProfile?.fullName?.charAt(0).toUpperCase() || user?.displayName?.charAt(0).toUpperCase() || '?'}
+                  </div>
                 </div>
                 <div className="ud-profile-info">
                   <h1 className="ud-profile-name">{userProfile?.fullName || 'User'}</h1>
