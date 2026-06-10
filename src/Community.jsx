@@ -136,11 +136,14 @@ export default function Community() {
               )}
             </button>
             <div className="search-container">
-              <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
               <input type="text" className="community-search" placeholder="Search discussions..."
-                value={searchQuery} onChange={e => setSearchQuery(e.target.value)}/>
+                value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && setSearchQuery(searchQuery)}/>
+              <button className="search-button" title="Search" onClick={() => setSearchQuery(searchQuery)} style={{background:'none',border:'none',cursor:'pointer',padding:'8px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:'18px',height:'18px'}}>
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </button>
             </div>
             <svg className="bell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
               strokeLinecap="round" strokeLinejoin="round"

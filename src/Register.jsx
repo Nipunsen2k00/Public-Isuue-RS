@@ -137,6 +137,9 @@ export default function Register() {
           const storageRef = ref(storage, `profilePics/${user.uid}/${Date.now()}_${profilePic.name}`);
           const snapshot = await uploadBytes(storageRef, profilePic);
           profilePicUrl = await getDownloadURL(snapshot.ref);
+          
+          // Update Firebase Auth photoURL with the uploaded image
+          await updateProfile(user, { photoURL: profilePicUrl });
         } catch (storageErr) {
           // Profile pic upload failed — log it but don't block registration
           console.warn('Profile pic upload failed (non-fatal):', storageErr.code, storageErr.message);
