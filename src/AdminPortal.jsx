@@ -54,6 +54,8 @@ const AdminPortal = () => {
         hours: ''
     });
     const [savingContact, setSavingContact] = useState(false);
+    const [contactMessages, setContactMessages] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     /* ── Real-time Firestore listener ── */
     useEffect(() => {
@@ -111,6 +113,27 @@ const AdminPortal = () => {
         fetchContact();
     }, []);
 
+    /* ── Real-time listener for Contact messages ── */
+    useEffect(() => {
+        const q = query(collection(db, 'contact_messages'), orderBy('createdAt', 'desc'));
+        const unsub = onSnapshot(q, (snap) => {
+            const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            setContactMessages(msgs);
+            setUnreadCount(msgs.filter(m => !m.read).length);
+        }, (err) => {
+            console.error('Error listening contact_messages:', err);
+        });
+        return () => unsub();
+    }, []);
+
+    const handleMarkRead = async (id) => {
+        try {
+            await updateDoc(doc(db, 'contact_messages', id), { read: true });
+        } catch (err) {
+            console.error('Failed to mark message read:', err);
+        }
+    };
+
     const handleSaveContact = async (e) => {
         e.preventDefault();
         setSavingContact(true);
@@ -159,6 +182,9 @@ const AdminPortal = () => {
                             <div className="ap-active-indicator"/>
                             <Icon/>
                             {tab}
+                            {tab === 'Contact' && unreadCount > 0 && (
+                                <span className="ap-notif-bubble">{unreadCount}</span>
+                            )}
                         </a>
                     ))}
                     <div className="ap-nav-section-title">ADMIN CONTROL</div>
@@ -468,6 +494,33 @@ const AdminPortal = () => {
                                     {savingContact ? 'Saving...' : 'Update Contact Information'}
                                 </button>
                             </form>
+                        </div>
+                        {/* Contact messages list */}
+                        <div style={{marginTop: '1.5rem'}}>
+                            <h3 style={{marginBottom: '1rem'}}>Messages from visitors</h3>
+                            {contactMessages.length === 0 ? (
+                                <div style={{padding:'1rem', color:'#94a3b8'}}>No messages yet.</div>
+                            ) : (
+                                <div style={{display:'grid', gap:'0.75rem'}}>
+                                    {contactMessages.map(msg => (
+                                        <div key={msg.id} style={{background:'rgba(255,255,255,0.03)', padding:'1rem', borderRadius:8, display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+                                            <div>
+                                                <div style={{fontWeight:700}}>{msg.name || 'Anonymous'} <span style={{fontWeight:400, color:'#94a3b8', marginLeft:8}}>&lt;{msg.email || '—'}&gt;</span></div>
+                                                <div style={{color:'#94a3b8', marginTop:6}}>{msg.subject || 'No subject'}</div>
+                                                <div style={{marginTop:8, color:'#cbd5e1', whiteSpace:'pre-wrap'}}>{msg.message}</div>
+                                                <div style={{marginTop:8, fontSize:'0.85rem', color:'#94a3b8'}}>{msg.createdAt && msg.createdAt.toDate ? timeAgo(msg.createdAt.toDate()) : 'Just now'}</div>
+                                            </div>
+                                            <div style={{display:'flex', flexDirection:'column', gap:8, marginLeft:16}}>
+                                                {!msg.read ? (
+                                                    <button className="ap-action-btn ap-btn-approve" onClick={() => handleMarkRead(msg.id)}>Mark read</button>
+                                                ) : (
+                                                    <div style={{color:'#94a3b8'}}>Read</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 import './Contact.css';
 
@@ -13,6 +13,10 @@ const Contact = () => {
     hours: 'Mon - Fri, 9:00 AM - 6:00 PM'
   });
   const [loading, setLoading] = useState(true);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const fetchContactInfo = async () => {
@@ -31,9 +35,23 @@ const Contact = () => {
     fetchContactInfo();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Thank you for your message! We will get back to you soon.');
+    try {
+      await addDoc(collection(db, 'contact_messages'), {
+        name,
+        email,
+        subject,
+        message,
+        createdAt: serverTimestamp(),
+        read: false
+      });
+      setName(''); setEmail(''); setSubject(''); setMessage('');
+      alert('Thank you for your message! Support will be notified.');
+    } catch (err) {
+      console.error('Failed to submit message:', err);
+      alert('Failed to send message. Please try again later.');
+    }
   };
 
   return (
@@ -106,19 +124,19 @@ const Contact = () => {
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label className="form-label">Full Name</label>
-                <input type="text" className="form-input" placeholder="John Doe" required />
+                <input type="text" className="form-input" placeholder="John Doe" required value={name} onChange={e=>setName(e.target.value)} />
               </div>
               <div className="form-group">
                 <label className="form-label">Email Address</label>
-                <input type="email" className="form-input" placeholder="john@example.com" required />
+                <input type="email" className="form-input" placeholder="john@example.com" required value={email} onChange={e=>setEmail(e.target.value)} />
               </div>
               <div className="form-group">
                 <label className="form-label">Subject</label>
-                <input type="text" className="form-input" placeholder="How can we help?" required />
+                <input type="text" className="form-input" placeholder="How can we help?" required value={subject} onChange={e=>setSubject(e.target.value)} />
               </div>
               <div className="form-group">
                 <label className="form-label">Message</label>
-                <textarea className="form-textarea" placeholder="Tell us more about your inquiry..." required></textarea>
+                <textarea className="form-textarea" placeholder="Tell us more about your inquiry..." required value={message} onChange={e=>setMessage(e.target.value)}></textarea>
               </div>
               <button type="submit" className="contact-btn">
                 Send Message

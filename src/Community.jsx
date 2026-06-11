@@ -445,7 +445,6 @@ export default function Community() {
     </div>
   );
 }
-}
 
 /* ── Helpers ── */
 function timeAgo(date) {
