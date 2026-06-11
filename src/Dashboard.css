@@ -636,6 +636,9 @@ body {
   gap: 24px;
 }
 
+/* Ensure grid items stretch so cards have equal height */
+.grid > .card, .grid > .sidebar { align-self: stretch; }
+
 /* ============ CARDS ============ */
 .card {
   background: var(--bg-card);
@@ -644,6 +647,10 @@ body {
   padding: 28px;
   box-shadow: var(--shadow-md);
   transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden; /* prevent content overflow */
 }
 
 .card:hover {
@@ -716,6 +723,17 @@ body {
   letter-spacing: -0.3px;
 }
 
+/* Prevent long unbroken strings from overflowing and clamp lines */
+.post-title {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* clamp to 2 lines */
+  -webkit-box-orient: vertical;
+}
+
 .image-wrapper { overflow: hidden; border-radius: 12px; margin-bottom: 16px; }
 
 .post-image {
@@ -735,6 +753,17 @@ body {
   margin-bottom: 20px;
 }
 
+/* Excerpt: allow wrapping of long words and clamp to 3 lines with ellipsis */
+.post-excerpt {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* clamp to 3 lines */
+  -webkit-box-orient: vertical;
+}
+
 .post-footer {
   display: flex;
   align-items: center;
@@ -742,6 +771,9 @@ body {
   border-top: 1px solid rgba(0,0,0,0.05);
   padding-top: 16px;
 }
+
+/* Push footer to bottom to keep consistent heights */
+.post-footer { margin-top: auto; }
 
 .stat {
   display: flex;

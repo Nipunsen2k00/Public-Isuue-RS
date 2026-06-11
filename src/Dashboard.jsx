@@ -435,7 +435,7 @@ function Dashboard() {
                       <img src={post.imageUrl} alt={post.title} className="post-image" />
                     </div>
                   )}
-                  <p className="post-excerpt">{post.description?.substring(0, 150)}...</p>
+                  <p className="post-excerpt">{post.description}</p>
                   <div className="post-footer">
                     <div className="stat">
                       <svg className="stat-icon" viewBox="0 0 24 24" fill="currentColor">
