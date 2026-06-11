@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, onSnapshot, doc, updateDoc, orderBy, query, getDoc, setDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { collection, onSnapshot, doc, updateDoc, orderBy, query, getDoc, setDoc, getDocs } from 'firebase/firestore';
+import { db, firebaseConfig } from './firebase';
 import './AdminPortal.css';
 
 // --- Icons ---
@@ -136,6 +136,22 @@ const AdminPortal = () => {
             await updateDoc(doc(db, 'contact_messages', id), { read: true });
         } catch (err) {
             console.error('Failed to mark message read:', err);
+        }
+    };
+
+    const [debugInfo, setDebugInfo] = useState(null);
+
+    const handleTestRead = async () => {
+        setDebugInfo({ loading: true });
+        try {
+            const q = query(collection(db, 'contact_messages'), orderBy('createdAt', 'desc'));
+            const snap = await getDocs(q);
+            const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            console.log('Test read: got', msgs.length, 'messages');
+            setDebugInfo({ loading: false, ok: true, count: msgs.length, sample: msgs.slice(0,3) });
+        } catch (err) {
+            console.error('Test read failed:', err);
+            setDebugInfo({ loading: false, ok: false, error: err.message || String(err) });
         }
     };
 
@@ -448,7 +464,16 @@ const AdminPortal = () => {
                 {/* Contact Edit Tab Content */}
                 {activeTab === 'Contact' && (
                     <div className="ap-contact-edit">
-                                {/* Contact edit removed — not needed. Messages list shown below. */}
+                        {/* Contact edit removed — not needed. Messages list shown below. */}
+                        <div style={{marginBottom: '1rem'}}>
+                            <strong>Debug:</strong> Project ID: <span style={{color:'#94a3b8'}}>{firebaseConfig.projectId}</span>
+                            <button style={{marginLeft:12}} className="ap-action-btn" onClick={handleTestRead}>Test read</button>
+                            {debugInfo && (
+                                <div style={{marginTop:8, color: debugInfo.ok ? '#22c55e' : '#ef4444'}}>
+                                    {debugInfo.loading ? 'Checking…' : debugInfo.ok ? `Read OK — ${debugInfo.count} messages (showing up to 3)` : `Read failed: ${debugInfo.error}`}
+                                </div>
+                            )}
+                        </div>
                         {/* Contact messages list */}
                         <div style={{marginTop: '1.5rem'}}>
                             <h3 style={{marginBottom: '1rem'}}>Messages from visitors</h3>
