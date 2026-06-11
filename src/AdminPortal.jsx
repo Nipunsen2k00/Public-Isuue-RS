@@ -229,7 +229,7 @@ const AdminPortal = () => {
                 <header className="ap-header">
                     <div className="ap-header-title">
                         <h1>{activeTab}</h1>
-                        <p>{activeTab === 'Contact' ? 'Update the public contact information shown on the Contact page.' : 'Review, approve, and resolve community-submitted reports.'}</p>
+                        <p>{activeTab === 'Contact' ? 'View and manage messages submitted through the public Contact page.' : 'Review, approve, and resolve community-submitted reports.'}</p>
                     </div>
                     <div className="ap-header-actions">
                         <div className="ap-search-bar">

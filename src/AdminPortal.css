@@ -185,6 +185,19 @@
   margin: 0 auto;
 }
 
+/* Contact tab adjustments */
+.ap-contact-edit {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+.ap-contact-edit h3 {
+  margin: 0 0 12px 0;
+}
+.ap-contact-edit > div {
+  max-width: 920px;
+}
+
 .ap-header {
   display: flex;
   justify-content: space-between;
