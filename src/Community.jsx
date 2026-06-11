@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, increment, addDoc, getDocs, orderBy } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import './Community.css';
@@ -25,6 +25,10 @@ export default function Community() {
   const [feedError,    setFeedError]    = useState('');
   const [user,         setUser]         = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [commentsModal, setCommentsModal] = useState(null);
+  const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState([]);
+  const [loadingComments, setLoadingComments] = useState(false);
 
   /* ── Check Auth State ── */
   useEffect(() => {
@@ -49,6 +53,7 @@ export default function Community() {
         tagClass: CAT_TAG_CLASS[d.data().category] || 'tag-blue',
         excerpt:  d.data().description || '',
         upvotes:  d.data().upvotes     || 0,
+        downvotes: d.data().downvotes || 0,
         comments: d.data().comments    || 0,
         // Sort by createdAt client-side (newest first)
         _ts:      d.data().createdAt?.toDate?.()?.getTime() || 0,
@@ -80,6 +85,79 @@ export default function Community() {
       await updateDoc(doc(db, 'reports', id), { upvotes: increment(1) });
     } catch (err) {
       console.error('Upvote error:', err);
+    }
+  };
+
+  /* ── Downvote ── */
+  const handleDownvote = async (id) => {
+    setFeed(prev => prev.map(item => item.id === id ? { ...item, downvotes: item.downvotes + 1 } : item));
+    try {
+      await updateDoc(doc(db, 'reports', id), { downvotes: increment(1) });
+    } catch (err) {
+      console.error('Downvote error:', err);
+    }
+  };
+
+  /* ── Load comments ── */
+  const loadComments = async (reportId) => {
+    setLoadingComments(true);
+    try {
+      const commentsQuery = query(
+        collection(db, 'reports', reportId, 'comments'),
+        orderBy('createdAt', 'desc')
+      );
+      const snapshot = await getDocs(commentsQuery);
+      const commentsData = snapshot.docs.map(d => ({
+        id: d.id,
+        ...d.data(),
+        createdAt: d.data().createdAt?.toDate?.() || new Date()
+      }));
+      setComments(commentsData);
+    } catch (err) {
+      console.error('Error loading comments:', err);
+      setComments([]);
+    }
+    setLoadingComments(false);
+  };
+
+  /* ── Open comments modal ── */
+  const handleCommentClick = (item) => {
+    if (!user) {
+      alert('Please log in to view comments');
+      return;
+    }
+    setCommentsModal(item);
+    loadComments(item.id);
+    setCommentText('');
+  };
+
+  /* ── Add comment ── */
+  const handleAddComment = async () => {
+    if (!commentText.trim() || !commentsModal || !user) return;
+    
+    try {
+      await addDoc(
+        collection(db, 'reports', commentsModal.id, 'comments'),
+        {
+          authorName: user.displayName || user.email || 'Anonymous',
+          authorId: user.uid,
+          authorPhoto: user.photoURL || '',
+          text: commentText,
+          createdAt: new Date(),
+        }
+      );
+      
+      // Update comment count
+      await updateDoc(doc(db, 'reports', commentsModal.id), {
+        comments: increment(1)
+      });
+
+      // Reload comments
+      loadComments(commentsModal.id);
+      setCommentText('');
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      alert('Failed to add comment');
     }
   };
 
@@ -252,13 +330,19 @@ export default function Community() {
                   <p className="feed-card-excerpt">{item.excerpt}</p>
                   <div className="feed-card-actions">
                     <div className="action-left">
-                      <button className="action-btn" onClick={() => handleUpvote(item.id)}>
+                      <button className="action-btn" onClick={() => handleUpvote(item.id)} title="Like">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                         </svg>
                         {item.upvotes}
                       </button>
-                      <button className="action-btn" onClick={() => alert('Comments section opened.')}>
+                      <button className="action-btn" onClick={() => handleDownvote(item.id)} title="Dislike">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{transform: 'scaleY(-1)'}}>
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        {item.downvotes}
+                      </button>
+                      <button className="action-btn" onClick={() => handleCommentClick(item)} title="Comment">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
                         </svg>
@@ -301,6 +385,56 @@ export default function Community() {
         </div>
       </main>
 
+      {/* ── COMMENTS MODAL ── */}
+      {commentsModal && (
+        <div className="modal-overlay" onClick={() => setCommentsModal(null)}>
+          <div className="comments-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Comments on "{commentsModal.title}"</h2>
+              <button className="modal-close" onClick={() => setCommentsModal(null)}>✕</button>
+            </div>
+
+            <div className="comments-list">
+              {loadingComments ? (
+                <p style={{textAlign:'center',color:'#999'}}>Loading comments...</p>
+              ) : comments.length === 0 ? (
+                <p style={{textAlign:'center',color:'#999'}}>No comments yet. Be the first!</p>
+              ) : (
+                comments.map(comment => (
+                  <div className="comment-item" key={comment.id}>
+                    <div className="comment-header">
+                      <strong>{comment.authorName}</strong>
+                      <span className="comment-time">{timeAgo(comment.createdAt)}</span>
+                    </div>
+                    <p className="comment-text">{comment.text}</p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {user && (
+              <div className="comment-input-section">
+                <textarea
+                  className="comment-input"
+                  placeholder="Add your comment..."
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && e.ctrlKey && handleAddComment()}
+                />
+                <button className="comment-submit-btn" onClick={handleAddComment} disabled={!commentText.trim()}>
+                  Post Comment
+                </button>
+              </div>
+            )}
+            {!user && (
+              <div style={{padding:'12px',background:'#f0f0f0',borderRadius:'8px',textAlign:'center',color:'#666'}}>
+                <p>Please <span style={{cursor:'pointer',color:'#6366f1'}} onClick={() => navigate('/login')}>log in</span> to comment</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── FAB ── */}
       <button className="fab-button" onClick={() => navigate('/submit')}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -310,6 +444,7 @@ export default function Community() {
       </button>
     </div>
   );
+}
 }
 
 /* ── Helpers ── */
