@@ -117,7 +117,12 @@ const AdminPortal = () => {
     useEffect(() => {
         const q = query(collection(db, 'contact_messages'), orderBy('createdAt', 'desc'));
         const unsub = onSnapshot(q, (snap) => {
-            const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            console.log('contact_messages snapshot size=', snap.size);
+            const msgs = snap.docs.map(d => {
+                const data = d.data();
+                console.log('contact message doc', d.id, data);
+                return ({ id: d.id, ...data });
+            });
             setContactMessages(msgs);
             setUnreadCount(msgs.filter(m => !m.read).length);
         }, (err) => {
@@ -443,58 +448,7 @@ const AdminPortal = () => {
                 {/* Contact Edit Tab Content */}
                 {activeTab === 'Contact' && (
                     <div className="ap-contact-edit">
-                        <div className="ap-stat-card" style={{maxWidth: '600px', margin: '2rem 0', padding: '2rem'}}>
-                            <form onSubmit={handleSaveContact}>
-                                <div style={{marginBottom: '1.5rem'}}>
-                                    <label style={{display:'block', marginBottom:'0.5rem', fontWeight:'600', color:'rgba(255,255,255,0.5)'}}>Email Address</label>
-                                    <input 
-                                        type="email" 
-                                        value={contactEdit.email} 
-                                        onChange={e => setContactEdit({...contactEdit, email: e.target.value})}
-                                        style={{width:'100%', padding:'0.75rem', borderRadius:'0.5rem', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'white'}}
-                                        required
-                                    />
-                                </div>
-                                <div style={{marginBottom: '1.5rem'}}>
-                                    <label style={{display:'block', marginBottom:'0.5rem', fontWeight:'600', color:'rgba(255,255,255,0.5)'}}>Phone Number</label>
-                                    <input 
-                                        type="text" 
-                                        value={contactEdit.phone} 
-                                        onChange={e => setContactEdit({...contactEdit, phone: e.target.value})}
-                                        style={{width:'100%', padding:'0.75rem', borderRadius:'0.5rem', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'white'}}
-                                        required
-                                    />
-                                </div>
-                                <div style={{marginBottom: '1.5rem'}}>
-                                    <label style={{display:'block', marginBottom:'0.5rem', fontWeight:'600', color:'rgba(255,255,255,0.5)'}}>Office Address</label>
-                                    <input 
-                                        type="text" 
-                                        value={contactEdit.address} 
-                                        onChange={e => setContactEdit({...contactEdit, address: e.target.value})}
-                                        style={{width:'100%', padding:'0.75rem', borderRadius:'0.5rem', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'white'}}
-                                        required
-                                    />
-                                </div>
-                                <div style={{marginBottom: '2rem'}}>
-                                    <label style={{display:'block', marginBottom:'0.5rem', fontWeight:'600', color:'rgba(255,255,255,0.5)'}}>Working Hours</label>
-                                    <input 
-                                        type="text" 
-                                        value={contactEdit.hours} 
-                                        onChange={e => setContactEdit({...contactEdit, hours: e.target.value})}
-                                        style={{width:'100%', padding:'0.75rem', borderRadius:'0.5rem', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'white'}}
-                                        required
-                                    />
-                                </div>
-                                <button 
-                                    type="submit" 
-                                    className="ap-btn-primary" 
-                                    style={{width: '100%', justifyContent: 'center'}}
-                                    disabled={savingContact}
-                                >
-                                    {savingContact ? 'Saving...' : 'Update Contact Information'}
-                                </button>
-                            </form>
-                        </div>
+                                {/* Contact edit removed — not needed. Messages list shown below. */}
                         {/* Contact messages list */}
                         <div style={{marginTop: '1.5rem'}}>
                             <h3 style={{marginBottom: '1rem'}}>Messages from visitors</h3>

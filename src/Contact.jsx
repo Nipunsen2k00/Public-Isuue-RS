@@ -38,14 +38,16 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, 'contact_messages'), {
+      const ref = await addDoc(collection(db, 'contact_messages'), {
         name,
         email,
         subject,
         message,
         createdAt: serverTimestamp(),
+        createdAtLocal: new Date(),
         read: false
       });
+      console.log('Contact message saved, id=', ref.id);
       setName(''); setEmail(''); setSubject(''); setMessage('');
       alert('Thank you for your message! Support will be notified.');
     } catch (err) {
