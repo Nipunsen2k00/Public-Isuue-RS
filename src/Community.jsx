@@ -128,6 +128,7 @@ export default function Community() {
       alert('Please log in to view comments');
       return;
     }
+    console.debug('Opening comments for report', item.id, 'currentUser:', user && { uid: user.uid, email: user.email });
     setCommentsModal(item);
     loadComments(item.id);
     setCommentText('');
