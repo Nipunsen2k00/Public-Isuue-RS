@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, onSnapshot, doc, updateDoc, increment, addDoc, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, increment, addDoc, getDocs, orderBy, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import './Community.css';
@@ -29,6 +29,8 @@ export default function Community() {
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [commentSubmitError, setCommentSubmitError] = useState('');
 
   /* ── Check Auth State ── */
   useEffect(() => {
@@ -133,31 +135,63 @@ export default function Community() {
 
   /* ── Add comment ── */
   const handleAddComment = async () => {
-    if (!commentText.trim() || !commentsModal || !user) return;
-    
-    try {
-      await addDoc(
-        collection(db, 'reports', commentsModal.id, 'comments'),
-        {
-          authorName: user.displayName || user.email || 'Anonymous',
-          authorId: user.uid,
-          authorPhoto: user.photoURL || '',
-          text: commentText,
-          createdAt: new Date(),
-        }
-      );
-      
-      // Update comment count
-      await updateDoc(doc(db, 'reports', commentsModal.id), {
-        comments: increment(1)
-      });
+    setCommentSubmitError('');
+    const text = (commentText || '').trim();
+    if (!text) {
+      setCommentSubmitError('Comment cannot be empty.');
+      return;
+    }
+    if (!commentsModal) {
+      setCommentSubmitError('No report selected.');
+      return;
+    }
+    if (!user) {
+      setCommentSubmitError('You must be logged in to post comments.');
+      return;
+    }
+    if (text.length < 2) {
+      setCommentSubmitError('Comment is too short.');
+      return;
+    }
+    if (text.length > 2000) {
+      setCommentSubmitError('Comment is too long.');
+      return;
+    }
 
-      // Reload comments
-      loadComments(commentsModal.id);
+    setCommentSubmitting(true);
+    try {
+      const payload = {
+        authorName: user.displayName || user.email || 'Anonymous',
+        authorId: user.uid,
+        authorPhoto: user.photoURL || '',
+        text,
+        createdAt: serverTimestamp()
+      };
+      console.debug('Posting comment', { reportId: commentsModal.id, payload });
+
+      const colRef = collection(db, 'reports', commentsModal.id, 'comments');
+      const docRef = await addDoc(colRef, payload);
+      console.debug('Comment created:', docRef.id);
+
+      // Update comment count on parent report
+      try {
+        await updateDoc(doc(db, 'reports', commentsModal.id), { comments: increment(1) });
+      } catch (upErr) {
+        console.error('Failed to increment comment count:', upErr);
+        // Don't treat this as fatal for the user — continue to reload comments
+      }
+
+      // Reload comments and reset
+      await loadComments(commentsModal.id);
       setCommentText('');
+      setCommentSubmitError('');
     } catch (err) {
       console.error('Error adding comment:', err);
-      alert('Failed to add comment');
+      // Show a more meaningful error message when available
+      const message = (err && err.message) ? err.message : 'Failed to add comment due to network or permissions error.';
+      setCommentSubmitError(message);
+    } finally {
+      setCommentSubmitting(false);
     }
   };
 
@@ -421,8 +455,11 @@ export default function Community() {
                   onChange={e => setCommentText(e.target.value)}
                   onKeyPress={e => e.key === 'Enter' && e.ctrlKey && handleAddComment()}
                 />
-                <button className="comment-submit-btn" onClick={handleAddComment} disabled={!commentText.trim()}>
-                  Post Comment
+                {commentSubmitError && (
+                  <div style={{color:'#b42318',background:'#fff1f2',padding:'8px 12px',borderRadius:8,fontSize:14}}>{commentSubmitError}</div>
+                )}
+                <button className="comment-submit-btn" onClick={handleAddComment} disabled={commentSubmitting || !commentText.trim()}>
+                  {commentSubmitting ? 'Posting…' : 'Post Comment'}
                 </button>
               </div>
             )}
