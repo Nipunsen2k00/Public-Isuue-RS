@@ -170,6 +170,16 @@ export default function Community() {
       };
       console.debug('Posting comment', { reportId: commentsModal.id, payload });
 
+      // Log auth state and ID token for debugging permission errors
+      try {
+        const idToken = await user.getIdToken(/* forceRefresh */ true);
+        console.debug('Current auth user before addDoc', { uid: user.uid, email: user.email, tokenSnippet: idToken && idToken.substr(0,20) + '...' });
+      } catch (tokErr) {
+        console.warn('Failed to get ID token:', tokErr);
+      }
+
+      console.debug('Target collection path', `reports/${commentsModal.id}/comments`);
+
       const colRef = collection(db, 'reports', commentsModal.id, 'comments');
       const docRef = await addDoc(colRef, payload);
       console.debug('Comment created:', docRef.id);
@@ -187,10 +197,14 @@ export default function Community() {
       setCommentText('');
       setCommentSubmitError('');
     } catch (err) {
-      console.error('Error adding comment:', err);
+      console.error('Error adding comment: addDoc failed', {
+        code: err.code,
+        message: err.message,
+        stack: err.stack
+      });
       // Show a more meaningful error message when available
       const message = (err && err.message) ? err.message : 'Failed to add comment due to network or permissions error.';
-      setCommentSubmitError(message);
+      setCommentSubmitError(message + (err.code ? ` (${err.code})` : ''));
     } finally {
       setCommentSubmitting(false);
     }
