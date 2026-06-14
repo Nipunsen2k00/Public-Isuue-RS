@@ -323,6 +323,8 @@
   animation: fadeInUp 0.6s forwards;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 .feed-card::before {
   content: '';
@@ -343,7 +345,8 @@
 }
 
 .feed-card-content {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0; /* allow content to shrink and prevent overflowing long words */
   display: flex;
   flex-direction: column;
 }
@@ -393,12 +396,24 @@
   flex: 1;
 }
 
+/* Prevent long words/URLs from overflowing the card */
+.feed-card-excerpt,
+.feed-card-title,
+.modal-header h2,
+.comment-text,
+.comment-input {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
 .feed-card-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid rgba(0,0,0,0.05);
   padding-top: 16px;
+  margin-top: auto; /* push actions to the bottom of the content column */
 }
 .action-left { display:flex; gap:10px; }
 
@@ -441,13 +456,15 @@
   width: 220px; height: 220px;
   border-radius: 16px;
   overflow: hidden;
-  flex-shrink: 0;
+  flex: 0 0 220px; /* fixed footprint so content can't push it out */
+  min-width: 220px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
   position: relative;
 }
 .feed-card-image img {
   width:100%; height:100%;
   object-fit:cover;
+  display: block;
   transition: transform 0.5s ease;
 }
 .feed-card:hover .feed-card-image img { transform:scale(1.08); }
@@ -745,7 +762,10 @@
 
   /* Feed */
   .feed-card    { flex-direction: column; padding: 20px; gap: 16px; }
-  .feed-card-image { width: 100%; height: 200px; order: -1; }
+  .feed-card-image { width: 100%; height: 200px; order: -1; min-width: 0; }
+
+  /* ensure text wraps well on narrower screens */
+  .feed-card-content { min-width: 0; }
 
   /* Filters */
   .feed-header-top { flex-direction: column; align-items: flex-start; gap: 10px; }
