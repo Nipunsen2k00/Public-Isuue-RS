@@ -85,28 +85,52 @@
 
 /* search */
 .community-page .search-container { position:relative; display:flex; align-items:center; gap:0; }
+
+/* Place the icon visually inside the input on the left and ensure
+   the placeholder/text starts after the icon. The button remains
+   accessible but is positioned over the left area of the input. */
+.community-page .search-button {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
 .community-page .search-icon {
-  color:rgba(255,255,255,0.3);
-  width:16px; height:16px;
-  pointer-events:none;
+  color: rgba(255,255,255,0.42);
+  width: 18px;
+  height: 18px;
+  pointer-events: none; /* allow click to hit the button element */
   transition: color 0.2s;
 }
-.community-page .search-button {
-  flex-shrink: 0;
-}
 .community-page .search-button:hover .search-icon {
-  color:rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.8);
 }
 .community-search {
-  padding: 9px 16px 9px 16px !important;
+  padding: 9px 16px 9px 48px !important; /* left padding to accommodate icon */
   border: 1px solid rgba(255,255,255,0.1) !important;
-  border-radius: 99px 0 0 99px !important;
+  border-radius: 99px !important;
   background: rgba(255,255,255,0.07) !important;
   color: rgba(255,255,255,0.85) !important;
   font-size: 14px !important;
   width: 260px;
   transition: all 0.3s !important;
   font-family: inherit;
+  box-sizing: border-box;
+  height: 40px;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .community-search::placeholder { color:rgba(255,255,255,0.28) !important; }
 .community-search:focus {
@@ -115,6 +139,13 @@
   border-color: rgba(99,102,241,0.45) !important;
   box-shadow: inset 0 0 0 3px rgba(99,102,241,0.12) !important;
   width: 300px;
+}
+
+/* Allow long queries to wrap visually within input when it grows (desktop)
+   but prevent breaking the navbar layout — use overflow with ellipsis. */
+.community-search.long {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .community-page .profile-pic {
