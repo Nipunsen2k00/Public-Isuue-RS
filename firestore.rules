@@ -34,6 +34,29 @@ service cloud.firestore {
       allow delete: if request.auth != null && request.auth.token.email == 'admin@civiccurator.com';
     }
     
+    // Comments subcollection for reports
+    match /reports/{reportId}/comments/{commentId} {
+      // Allow reading comments if parent report is approved or the requester is the author or admin
+      allow read: if exists(/databases/$(database)/documents/reports/$(reportId)) && (
+        get(/databases/$(database)/documents/reports/$(reportId)).data.status == 'APPROVED'
+        || (request.auth != null && get(/databases/$(database)/documents/reports/$(reportId)).data.authorId == request.auth.uid)
+        || (request.auth != null && request.auth.token.email == 'admin@civiccurator.com')
+      );
+
+      // Allow creating comments only for authenticated users where the authorId matches
+      // and the text field is a non-empty string not exceeding 2000 characters.
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000;
+
+      // Allow the comment author or admin to update or delete their comments
+      allow update, delete: if request.auth != null && (
+        request.auth.token.email == 'admin@civiccurator.com' || resource.data.authorId == request.auth.uid
+      );
+    }
+    
     // Settings collection rules (for contact info, etc.)
     match /settings/{settingId} {
       allow read: if true;
